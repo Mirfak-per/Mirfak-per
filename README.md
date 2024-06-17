@@ -2,7 +2,7 @@
 - 👀 I’m interested in a lot of things, history about stars
 - 🌱 I’m currently learning Computer science
 - 💞️ I’m looking to collaborate on anything
-- 📫 How to reach me @Mirfak-per on instagram
+- 📫 How to reach me @Mirfak.Pers on instagram
 - 😄 Pronouns: he/him
 - ⚡ Fun fact: I am a leo
 
