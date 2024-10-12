@@ -1,0 +1,537 @@
+PASO A PASO:
+1)ingresar al root con sudo su
+
+2)se crea la carpeta o archivo
+
+3)se crea el grupo	
+
+4)se crea el usuario agregandolo al grupo
+
+5)nano /etc/ssh/sshd_config
+se cambia passwordAuthentication de no a si solo si te piden no hacer un key gen
+si se modifica algo dentro de nano /etc/ssh/sshd_config 
+se debe hacer un reset con service sshd restart
+
+(opcional solo si piden usar keygen o llave publica/privada)
+
+6)se vuelve a win con exit 
+
+7)se utiliza ssh-keygen
+
+8)despues de generar la llave te lo guardara en el directorio por defecto
+
+9)si es que se desea que sea mas segura la llave se le puede ingresar contraseña
+
+10)la llave se encuentra en el usuario en el cual se creo la llave en una carpeta de nombre .ssh
+
+11)la llave privada no se comparte y la que se utilizara es la .pub
+
+12)debes volver a entrar a linux y entrar al root
+
+13)se debe crear un directorio mkdir /home/usuario/.ssh
+   y un touch  /home/usuario/.ssh/authorized_keys
+
+14)para ingresar la llave publica se debe usar nano /home/usuario/.ssh/authorized_keys
+
+15)vas a la llave publica y la abres con un editor de texto la copias y la pegas con click derecho
+
+16)verificas si la llave se ingreso de manera correcta con cat /home/usuario/.ssh/authorized_keys
+
+17)revisas ll /home/usuario/.ssh deberia de estar en root 
+
+18)deberas darle el owner al usuario con chown -R usuario:usuario /home/usuario/.ssh
+
+19)se le daran los permisos al usuario con chmod 700 /home/usuario/.ssh
+   y luego chmod 600 /home/usuario/.ssh/authorized_keys
+
+20)en nano /etc/ssh/sshd_config debes buscar la linia que dice PubKeyAuthentication yes y le sacas el # 
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+PASO A PASO SCRIPT:
+1)estar en el root 
+manera manual(opcion1)
+2)mkdir /BKP
+
+3)cp /etc/passwd /BKP/
+  cp /etc/group /BKP/
+  cp /etc/shadow /BKP/
+  cp /etc/ssh/sshd_config /BKP/
+
+4)para verificarlo utiliza ll /BKP/
+
+GUARDAR(BKP) TODO DENTRO DE UN RAR(opcion2)
+1)estar en el root 
+
+2)tar -czf /BKP/respaldo.tar.gz /etc/passwd
+
+3)para ver si se creo ll /BKP
+
+4)podras ver que se esta respaldando con tar -tzf /BKP/respaldo.tar.gz
+
+5)para descomprimir el archivo tar -xzf /BKP/respaldo.tar.gz -C /BKP
+
+SCRIPT PARA HACER RESPALDOS(este es el principal para que se ejecute cada cierto tiempo)
+1)con la carpeta BKP creada usas cd /BKP/
+
+2)nano script.sh
+
+3)debes escribir
+#!/bin/bash
+
+USRS="/etc/passwd"
+GRPS="/etc/group"
+PASS="/etc/shadow'
+CSSH="/etc/ssh/sshd_config"
+
+tar -czf "/BKP/respaldo$(date +%F).tar.gz" "$USRS" "GRPS" "PASS" "CSSH"
+
+echo "respaldo creado exitosamente!!"
+
+4)ctrl x Y y enter
+
+5)si sigues en la carpeta escribes . script.sh 
+  y si no estas en la carpeta BKP pones la ruta . /BKP/script.sh
+
+6)haces tar -xzf /BKP/respaldo(aqui va la fecha que te dice al hacer ll sin los () ).tar.gz /BKP para extraerlos
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+PASO A PASO HORA Y FECHA
+1)estando en el root utilizas date para la fecha actual 
+
+2)con timedatectl puedes ver la zona horaria utilizada 
+
+3)si no tienes la zona horaria de chile usa: 
+  timedatectl list-timezones 
+
+4)para moverte en la lista utilizas las flechas o el avpag y repag
+
+5)cuando encontraste la zona horaria de santiago sales con la letra q
+
+6)ingresa como zona horaria activa con timedatectl set-timezone America/Santiago
+
+7)verificar la zona horaria con timedatectl
+
+8)para crear un formato de fecha mas preciso utiliza date +%d-%m-%Y\ %H:%M:%S
+
+9)hacer un reboot 
+
+10)conectar la maquina con el cmd
+
+11)entrar al root 
+
+12)hace timedatectl y verificar si la zona horaria sigue 
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+PASO A PASO CRONTAB:
+1)estar en el root
+
+2)primero instalar crontab con: dnf install cronni
+
+3)presionar y para que se inicie la descarga
+
+4)arrancar crontab con: service crond start
+
+5)escribir systemctl enable crond
+
+6)ver crontab con cat /etc/crontab
+
+CREAR CRONTAB PARA USUARIO
+
+1)vi /etc/crontab
+
+2)presiona letra a para comenzar a editar el archivo
+
+3)los * tienen un significado en tiempo
+1*=min (0-59)
+2*=hour(0-23)
+3*=day of month(1-31)
+4*=month(1-12)
+5*=day of week(0-6)0=dom-1=lun-2=mar-3=mie-4=jue-5=vie-6=sab
+
+4)debes ingresar ***** root mkdir /bkp
+puedes cambiar los * para indicar una fecha en la cual se va ejecutar 
+la fecha se le de derecha a izquierda
+
+5)presionas esc tienes las siguientes opciones 
+:q!=para salir sin guardar
+:w=para guardar sin salir
+:wq=para guardar y salir
+
+6)escribe head -n 14 /etc/crontab >> /var/spool/cron/usuario
+
+7)entrar al crontab del usuario con:
+  crontab -e -u usuario
+
+8)modificar MAILTO=root con: MAILTO=usuario
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+PASO A PASO (PROGRAMAR TAREAS CON CRONTAB)
+1)en el root
+
+2)crear carpeta scripts mkdir /scripts
+
+3)touch /scripts/registro.sh
+
+4)vi /scripts/registro.sh
+
+5)escribe #!/bin/bash
+
+6)crea el programa que quieras automatizar y envialo con >> /var/log/registro.txt
+usa echo "para imprimir un texto "
+
+7)crea el archi que guardara el registro touch 	/var/log/registro.txt
+
+8)vi /etc/crontab
+
+9)escribe ***** root . /scripts/registro.sh
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+PASO A PASO(SCRIPTING AVANZADO)
+1)en el root
+
+2)para ver los procesos que se estan corriendo: ps
+
+3)abrir otro cmd conectarlo a la maquina y entrar al root(sudo su) y logear el usuario
+
+4)mkdir /scripts
+  touch /scripts/nuevo.sh
+
+5) vi /scripts/nuevo.sh
+
+6) #!/bin/bash     
+   if [condición logica]; then
+         Lo que ocurre 
+   elif [condicion logica]; then           
+           Lo que ocurre
+
+7)1: Procesos: 
+        ps --> ver los procesos que se están ejecutando
+        useradd usuario
+        passwd usuario -->estos dos comandos se ejecutan distintos cmd's   
+        ps -U ec2-user -u usuario u
+        kill id --> eliminar un proceso 
+     2:Script
+        mkdir/ scripts
+        touch /scripts/nuevo.sh
+
+        vi /scripts/nuevo.sh
+           DENTRO DE NUEVO
+            |#!/bin/bash     
+            | if [condición logica]; then
+ 	    |	      Lo que ocurre 
+            | elif [condiion logica]; then           
+            |         Lo que ocurre
+------------Ver si hay un directorio creado, si no hay crear uno------- 
+            | if [ -d /carpeta ]; then   
+            |   echo"La carpeta ya existe"
+            | elif [ ! -d /carpeta ]; then
+            |    mkdir /carpeta
+            |    echo"La carpeta ha sido creada"
+------------Ver si un archivo existe:-----
+            | if [ -f /scripts/otro.sh]; then
+            |   echo"El archivo ya existe"
+            | elif [ ! -f /scripts/otro.sh ];then
+            | touch /scripts/otro.sh
+            | echo "El archivo fue creado"
+            . /scripts/nuevo.sh
+            |
+            |
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+PASO A PASO(ALMACENAMIENTO EFS)
+1)estar en el root
+
+2)EN EL LABORATORIO DE CHROME
+   EFS 
+     Nombre: xvd-server
+       VPC=Misma en la que este la EC2!!
+       Eliminar destinos de montaje anteriores
+       Crear Punto de montaje a VPC igual que el ec2
+   mkdir /homies
+   df /homies --> ver en que disco esta  homies  
+       todo en destino de montaje debe ser igual a la maquina virtual ec2
+       
+        Agregar regla de entrada a el grupo de seguridad:
+       NFS , Anywhere-IPv4
+        Asociar copiar comando y borrar efs yagregar /homies
+
+   mkdir /homies
+   df /homies --> ver en que disco esta  homies  
+ESTO NO TIENE PERSISTENCIA
+   vi /etc/fstab
+  ip de origen--> que esta en la pestaña efs :/ /homies nfs4 defaults 0 0 
+
+mount -a --> desmonta los discos y vuelve a armarlos 
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+PASO A PASO()
+comandos:
+
+1: Usuarios y grupos: sudo su = para cambiarnos al usuario root
+-Usuario --> -login
+	     -contraseña
+	     -Grupo: se crea automáticamente menos de 10000
+-Grupos--> groupadd--> Añadir un grupo
+	   groupmod--> Modificar un grupo
+	   groupdel--> Eliminar un grupo	
+man= ver el manual de :___
+1) AÑADIR GRUPO
+   groupadd -g 2000 nombre_de_grupo
+   groupmod -g 2040 nombre_agrupo--> cambiar id de un     grupo
+   groupdel nombre_grupo
+2) ADMINISTRACION DE USUARIOS
+   useradd --> useradd -g 2040 nombre_usuario--> Asigna el usuario recién creado a un grupo en especifico
+
+   usermod-->usermod -u 2041 nombre_usuario--> -u me permite cambiar id(2000 a 2041)
+   userdel-->userdel nombre_usuario
+
+   groups nombre_susario: Ver en que grupo pertenezco 
+Agregar un usuario a mas de un grupo:
+   user mod -g 2030 -G 2040,2010 usuario-->(El 2040 y el 2010 son otros grupos a los que el usuario pertenecerá como grupos secundarios)
+2: Pertenencia de archivos y directorios
+   passwd nombre_usuario--> le entrega una contraseña(NO SE VERA LA CONTRASEÑA)
+   Login nombre_usuario--> iniciar sesion con un usuario
+   mkdir carpeta --> Crea un directorio (Carpeta)
+   touch archivo.txt--> Crea un archivo
+   exit --> salir de la sesion
+   login otro_nombre_usuario 
+   mkdir carpeta
+   touch archivo.txt
+   exit 
+   con el root:
+   touch /home/usuario/nuevo.txt  | Crea un archivo desde el root
+   mkdir /home/usuario/nuevo	  | Crea una carpeta desde el root
+   (Estos archivos son de el root.)
+QUIERO CAMBIAR LA PERTENENCIA DE ESTOS ARCHIVOS!!!
+   chown usuario:Grupo_usuario /home/usuario/nuevo
+   chown usuario:Grupo_usuario /home/usuario/nuevo.txt
+                 (También puede ponerse el id de el grupo)
+3: Permisos de usuario:
+   DE AQUI TENER 2 CMD 1 CON EL USUARIO ROOT Y OTRO CON UN USUARIO CREADO
+
+   SISTEMA UGO
+	Usuarios (dueño)
+	Grupo (al que pertenece)
+	Otros usuarios (no dueño, no grupo)
+	r -> lectura (2)
+	w -> escritura(4)
+	x -> ejecución(1)
+	- -> ninguno(0)
+	todos los permisos(7)
+
+   chmod --> Puede cambiar los permisos de los usuarios
+   chmod 000 /home/usuario/archivo.txt 
+   chmod 000 /home/usuario/directorio --> no tiene permisos para ni ver, ni escribir, ni ejecutar la carpetao susuario
+   chmod 400 /home/marcela/archivo.txt--> le otorga permisos de escritura
+   chmod 700 /home/usuario/archivo.txt --> Todos los permisos
+   chmod 740 /home/marcela/directorio--> El grupo puede 'ver' la carpeta
+   chmod 710 /home/usuario --> Poder ver la carpeta donde esta la carpeta anterior
+   chmod 750 /home/usuario --> permite a otro usuario de el mismo grupo, poder escribir y ejecutar 
+   chmod 766 --> con esto puedo hacer que el usuario tenga todos los permisos (7), que otro usuario de el mismo grupo pueda editar el archivo/carpeta (6). y que miembros de otros grupos puedan editar este archivo tambien (6)-->766$:
+
+4: Servicios ssh
+   Crear usuarios y la idea es que puedan conectarse a la instancia sin pasar por el ec2
+   nano /etc/ssh/ssh_config--> Poder cambiar los servicios para qur todos los usuarios puedan acceder a travez de la misma llave
+    PasswordAutentication "yes"
+    service sshd restart --> reinicia el servicio ssh
+    ssh usuario@ip -> esto es para poder ingresar con el usuario y la ip publica de la instancia
+Otra forma de hacer esto es:
+    Crear una clave para que puedan conectarse
+    Desde Windows!!
+    ssh-keygen --> crea un par de llaves publico privado(estas llaves están en el disco c/usuario/dasep/.ssh)
+    volver a linix(La instancia)
+    ej:
+       mkdir /home/usuario/.ssh
+       touch /home/usuario/.ssh/authorized_keys
+       nano /home/usuarios/.ssh/authoruzed_key--> esto me permite abrir el editor de texto
+       Copiar la llave publica!!
+       chown -R usuario:usuario /home/usuario/.ssh -->para entregarle el directorio a el usuario
+       chmod 700 /home/usuario/.ssh -->darle permiso para abrir el archivo
+       chmod 600 /home/usuario/.ssh/authorized_key --> Darle permiso para ver el la llave  
+       nano /etc/ssh/sshd_comnfig
+              PubkeyAuthentication yes --> quitar el #
+       service sshd restart --> Reiniciar servicio ssh, para que se guarden los cambios 
+5: TAR y scripting: --> Respaldar archivos
+     mkdir /BKP
+     tar -czf /BKP/respaldo.tar.gz /etc/passwd --> esto  crea un respaldo de en este caso los usarios(Esta opción me permite comprimir el archivo)
+     tar -xzf /BKP/respaldo.tar.gz -C /BKP --> Me permite descomprimir le archivo en la carpeta BKP, sin el -C /BKP se descomprime en el home
+     tar -czf /BKP/respaldo.tar.gz /etc/passwd /etc/group --> Esto me permite copiar 2 archivos con un comado sin sobrescibirlo
+     cd /BKP/
+     rm respaldo.tar.gz --> Esto borra un archivo
+     nano script.sh --> Crea un archivo .script para comprimir todos los archivos que quiera
+      (DENTRO DE EL SCRIPT)
+         USRS="/etc/passwd"
+         GRPS="/etc/group"
+         PASS="/etc/shhadow"
+         CSSH="/etc/ssh/sshd_config"
+
+       tar -czf "/BKP/respaldo$(date +%F).tar.gz" "$USRS" "$GRPS" "$PASS" "$CSSH" --> Poner todos estos archivos en el respaldos 
+         . /BKP/script.sh --> Ejecutar el script y crea el archivo
+       tar -tzf /BKP/respaldos.tar.gz --> Ver los archivos que yo quería respaldar
+       tar -xzf /BKP/respaldo2024-06-20(La Fecha puede variar).tar.gz--> descomprimir los archivos
+6: Fecha y Hora
+      timedatectl --> ver cosas de la zona 
+      timedatectl list-timezones --> ver las zonas horarias
+      timedatectl set-timezone America/Santiago--> Cambia la zona de horario que esta asignada
+      date +%F -->año-mes-dia
+      date +%d/%m/%Y --> 20/06/2024
+      date +%d/%m/%Y \ %H:%M:%S --> 20/06/2024 14:29:20
+      reboot --> Reinicio      
+7:CRONTAB:
+   Servicio
+   yum install cronie --> Instalar crontab
+   service crond start --> Iniciar crontab
+   systemctl enable crond --> Para que arranque de manera predeterminada el crontab, y no tener que instlarlo de nuevo
+   cat /etc/crontab --> crontab de el systema
+   |
+   crontab -e -u usuario --> le asigna un crontab a un usuario propio
+    vi /etc/crontab --> Poder agregar tareas
+* * * * * usuario comando
+ ej:
+* * * * * root mkdir /BKP --> q! Salir sin guardar, w guardar, wq guardar y salir 
+# LOS ASTERISCOS NOS INDICAN LOS MINUTOS, HORAS, DIAS DE EL MES, LOS MESES, DIA DE LA SEMANA#
+    ll/var/sool/cron/ususarios --> Se ven los crontab de los susuarios
+    crontab -e -u usuario --> si lo ejecuto crea un nuevo crontab si no tengo ninguno 
+     head -n 14 /etc/crontab --> llamo las instrucciones de crontab 
+     head -n 14 /etc/crontab >> /var/spool/cron/usuario --> esto envia las primeras 14 líneas de el crontab a el crontab de el usuario
+     crontab -e -u usuario: 
+         MAILTo == usuario --> esta opción antes pertenece al root, hay que cambiar eso a nuestro usuario, para que tenga su propio crontab
+8: Programar tareas 
+    mkdir scripts
+    touch /scripts/registros.sh --> Crea un script para poder asignarle tareas a nuestro crontab
+
+    vi /scripts/registros.sh --> editar este archivo con un comando 
+    #!/bin/bash
+
+    echo "La hora actual es $(date +%H:%M:%S)" > /var/log/registro.txt --> los símbolos > remplaza lo escrito anterior
+    touch /var/log/registro.txt
+    . /scripts/registro.sh --> Esto Muestra la hora
+    
+----> Editar crontab de el sistema para que ejecute la hora cada 1 minuto
+     vi /etc/crontab
+* * * * *root . /scripts/registro.sh --> esto dentro de el crontab
+
+9: ACL y GS
+  #ESTO OCURRE DENTRO DE EL LABORATORIO#
+   Crear VPC 
+     Nombre: 
+     bloque de direcciones ip 10.0.0.0.0/24
+   Crear subred-Publica
+     asignar en zona de disponibilidad
+     10.0.0.0/24
+   Crear Puerta de enlace a internet
+     conectar a la VPC
+   Crear una tabla de enrutamiento    
+     editar ruta
+       Agregar ruta : 0.0.0.0/0 Puerta de enlace de internet
+     asociación a una subred(La que ya creamos)  
+
+    Crear EC2   
+      Configuraciones de red: 
+         VPC: La que creamos xd
+           Subred-publica
+             Habilitar asignación automáticamente de IP
+       Crear nueva regkla
+           HTTPS, desde cualquier lugar
+    Conectarnos a la instancia
+        yum install httpd
+        mkdir /var/www/
+        mkdir /var/www/
+        mkdir /var/www/html/share
+        touch /var/www/html/share/archivo1.txt
+        touch /var/www/html/share/archivo2.txt
+        touch /var/www/html/share/archivo3.txt
+
+        service httpd start --> Esto inicia una pagina web con esta pagina, y estos archivos
+
+    Crear ACL(En el laboratorio en chrome)
+      Editar reglas de entrada 
+          TCP personalizado: 
+          Rango de puertos : 0-65535
+          Origen: mi IP publica/32
+      Editar reglas de salida 
+          TCP personalizado: 
+          Rango de puertos : 0-65535
+          Origen: mi IP publica/32
+
+10:IPTABLES:
+    dnf install iptables--> Instalar iptables(Es un servicio de firewall{seguridad})
+    iptables -nL --> Ver las reglas 
+  AGREGAR REGLAS
+    iptables -A INPUT -s ip de duoc/32 -d 0.0.0.0/0 -p TCP -j ACCEPT
+    iptables -A -s 0.0.0.0/0 -d 0.0.0.0/0 -p TCP -j DROP --> Rechaza todo el trafico TCP que no sea desde la IP de duoc que añadimos arriba
+    iptables -D IPUT -s ip de duoc /32 -d 0.0.0.0/0 -p TCP -j ACCEPT --> Esto borra una regla que halla creado
+
+11: Procesos y scripting avanzado 
+    1: Procesos: 
+        ps --> ver los procesos que se están ejecutando
+        useradd usuario
+        passwd usuario -->estos dos comandos se ejecutan distintos cmd's   
+        ps -U ec2-user -u usuario u
+        kill id --> eliminar un proceso 
+     2:Script
+        mkdir/ scripts
+        touch /scripts/nuevo.sh
+
+        vi /scripts/nuevo.sh
+           DENTRO DE NUEVO
+            |#!/bin/bash     
+            | if [condición logica]; then
+ 	    |	      Lo que ocurre 
+            | elif [condiion logica]; then           
+            |         Lo que ocurre
+------------Ver si hay un directorio creado, si no hay crear uno------- 
+            | if [ -d /carpeta ]; then   
+            |   echo"La carpeta ya existe"
+            | elif [ ! -d /carpeta ]; then
+            |    mkdir /carpeta
+            |    echo"La carpeta ha sido creada"
+------------Ver si un archivo existe:-----
+            | if [ -f /scripts/otro.sh]; then
+            |   echo"El archivo ya existe"
+            | elif [ ! -f /scripts/otro.sh ];then
+            | touch /scripts/otro.sh
+            | echo "El archivo fue creado"
+            . /scripts/nuevo.sh
+            |
+            |
+12: EFS
+EN EL LABORATORIO DE CHROME
+   EFS 
+     Nombre: xvd-server
+       VPC=Misma en la que este la EC2!!
+       Eliminar destinos de montaje anteriores
+       Crear Punto de montaje a VPC igual que el ec2
+   mkdir /homies
+   df /homies --> ver en que disco esta  homies  
+       todo en destino de montaje debe ser igual a la maquina virtual ec2
+       
+        Agregar regla de entrada a el grupo de seguridad:
+       NFS , Anywhere-IPv4
+        Asociar copiar comando y borrar efs yagregar /homies
+
+   mkdir /homies
+   df /homies --> ver en que disco esta  homies  
+ESTO NO TIENE PERSISTENCIA
+   vi /etc/fstab
+  ip de origen--> que esta en la pestaña efs :/ /homies nfs4 defaults 0 0 
+
+mount -a --> desmonta los discos y vuelve a armarlos 
+
+EXTRA:
+if [ ! -d /respaldos ]; then
+      mkdir /respaldos
+fi
+
+USR="/etc/passw"
+GRP="/etc/group"
+SHD="/etc/shadow"
+CSSH="/etc/ssh/sshd_config"
+TAB="/etc/fstab"
+
+if [ -f /respaldos/respaldo_$(date+%F).tar.gz ]; then
+	echo "El respaldo de hoy yaexiste"
+        echo"No puede crearse un segundo respaldo"
+elif [ ! -f /respaldos/respaldo_$(date+%F).tar.gz ]; then
+	tar -czf /respaldos/respaldo_$(date+%F).tar.gz "$USR" "$GRP" "$SHD" "$CSSH" "$TAB" 
+	echo "Respaldo generado exitosamente para fecha $(date +%d-%m-%Y\ %H:%M:%S)" >> /var/log/respaldos.txt
