@@ -4,7 +4,7 @@
 - 💞️ I’m looking to collaborate on anything
 - 📫 How to reach me @Mirfak.Pers on instagram
 - 😄 Pronouns: he/him
-- ⚡ Fun fact: I am a leo
+- ⚡ Fun fact: The name is the Brightest Star in Perseus
 
 <!---
 Mirfak-per/Mirfak-per is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
